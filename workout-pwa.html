@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#00e5ff">
+<link rel="manifest" href="./manifest.json">
+<title>Workout Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Vazirmatn:wght@300;400;500;700;900&display=swap');
+
+:root {
+  --bg: #0d0f14;
+  --surface: #151820;
+  --card: #1c2030;
+  --border: #252a3a;
+  --accent: #00e5ff;
+  --accent2: #ff4d6d;
+  --accent3: #39ff14;
+  --text: #e8eaf0;
+  --muted: #6b7280;
+  --gold: #ffd700;
+  --purple: #7c3aed;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0 0 80px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+[lang="fa"] body, .fa body, body.fa {
+  font-family: 'Vazirmatn', sans-serif;
+}
+
+.fa-font { font-family: 'Vazirmatn', sans-serif !important; }
+
+/* HEADER */
+.header {
+  text-align: center;
+  padding: 28px 16px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  position: relative;
+}
+.lang-btn {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: 1px;
+}
+.lang-btn:hover { border-color: var(--accent); }
+.header .eyebrow {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 3px; color: var(--accent);
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.header h1 {
+  font-size: 26px; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header p { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+/* TABS */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg);
+}
+.tab {
+  flex: 1; padding: 14px 8px;
+  text-align: center;
+  font-size: 12px; font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+  letter-spacing: .5px;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* PAGES */
+.page { display: none; padding: 16px; }
+.page.active { display: block; }
+
+/* WEEK NAV */
+.week-nav {
+  display: flex; align-items: center;
+  justify-content: center; gap: 16px;
+  margin-bottom: 20px;
+}
+.week-nav button {
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); width: 36px; height: 36px;
+  border-radius: 8px; font-size: 18px;
+  cursor: pointer; transition: all .2s;
+}
+.week-nav button:hover { border-color: var(--accent); color: var(--accent); }
+.week-label { font-weight: 700; font-size: 15px; min-width: 90px; text-align: center; }
+
+/* STATS */
+.stats-bar {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 10px; margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 8px; text-align: center;
+}
+.stat-card .val { font-size: 24px; font-weight: 900; line-height: 1; }
+.stat-card .lbl { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.cyan .val { color: var(--accent); }
+.red .val { color: var(--accent2); }
+.green .val { color: var(--accent3); }
+
+/* SECTION TITLE */
+.sec { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin: 20px 0 10px; }
+
+/* DAY CARDS */
+.day-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+  transition: border-color .2s;
+}
+.day-card.done { border-color: var(--accent3); }
+.day-card.rest-visual { opacity: .6; }
+
+.day-header {
+  display: flex; align-items: center;
+  gap: 10px; padding: 13px 14px; cursor: pointer;
+}
+.day-check {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0; transition: all .2s;
+}
+.day-card.done .day-check { background: var(--accent3); border-color: var(--accent3); color: #000; }
+.day-info { flex: 1; min-width: 0; }
+.day-name { font-weight: 700; font-size: 13px; }
+.day-type { font-size: 11px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.day-badge {
+  font-size: 9px; font-weight: 700;
+  padding: 3px 7px; border-radius: 20px; letter-spacing: 1px; flex-shrink: 0;
+}
+.badge-push { background: rgba(255,77,109,.15); color: var(--accent2); }
+.badge-pull { background: rgba(0,229,255,.15); color: var(--accent); }
+.badge-leg  { background: rgba(57,255,20,.15); color: var(--accent3); }
+.badge-full { background: rgba(255,215,0,.15); color: var(--gold); }
+.badge-cardio { background: rgba(167,139,250,.15); color: #a78bfa; }
+.badge-rest { background: rgba(107,114,128,.15); color: var(--muted); }
+.chevron { font-size: 11px; color: var(--muted); transition: transform .2s; flex-shrink: 0; }
+.day-card.open .chevron { transform: rotate(180deg); }
+
+/* EXPAND */
+.day-expand { display: none; padding: 0 14px 14px; }
+.day-card.open .day-expand { display: block; }
+
+.exercise-list { margin-bottom: 12px; }
+.exercise-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+}
+.exercise-item:last-child { border-bottom: none; }
+.ex-check {
+  width: 17px; height: 17px; border-radius: 4px;
+  border: 2px solid var(--border); flex-shrink: 0;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: 10px; transition: all .2s;
+}
+.ex-check.checked { background: var(--accent); border-color: var(--accent); color: #000; }
+.ex-name { flex: 1; font-size: 12px; }
+.ex-sets { font-size: 10px; color: var(--muted); white-space: nowrap; }
+
+/* DAILY NOTE */
+.daily-note-section { margin-top: 4px; }
+.daily-note-section label {
+  display: block; font-size: 10px; font-weight: 700;
+  color: var(--gold); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.daily-note-section textarea {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; color: var(--text);
+  font-size: 12px; resize: none; height: 64px;
+  transition: border-color .2s;
+}
+.daily-note-section textarea:focus { outline: none; border-color: var(--gold); }
+.daily-note-section textarea::placeholder { color: var(--muted); }
+.note-save-btn {
+  margin-top: 6px; padding: 7px 14px;
+  background: rgba(255,215,0,.1); border: 1px solid var(--gold);
+  color: var(--gold); border-radius: 8px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: all .2s;
+}
+.note-save-btn:hover { background: rgba(255,215,0,.2); }
+
+/* MEASUREMENTS (Stats tab) */
+.card-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; margin-bottom: 12px;
+}
+.card-box h3 { font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+.card-box h3.c-accent { color: var(--accent); }
+.card-box h3.c-gold { color: var(--gold); }
+.card-box h3.c-red { color: var(--accent2); }
+.measure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.measure-item label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.measure-item input {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; color: var(--text);
+  font-size: 13px; transition: border-color .2s;
+}
+.measure-item input:focus { outline: none; border-color: var(--accent); }
+
+/* BUTTONS */
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.btn {
+  padding: 13px; border: none; border-radius: 12px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: opacity .2s; display: flex;
+  align-items: center; justify-content: center; gap: 6px;
+}
+.btn:hover { opacity: .85; }
+.btn-save { background: linear-gradient(135deg, var(--accent), var(--purple)); color: #fff; grid-column: 1/-1; font-size: 14px; padding: 15px; }
+.btn-export { background: var(--card); border: 1px solid var(--accent3); color: var(--accent3); }
+.btn-import { background: var(--card); border: 1px solid var(--gold); color: var(--gold); }
+#importFile { display: none; }
+
+/* HISTORY */
+.history-week {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+}
+.history-week-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 14px; cursor: pointer;
+}
+.history-week-header .hw-title { font-weight: 700; font-size: 14px; }
+.history-week-header .hw-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.hw-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
+  background: rgba(0,229,255,.1); color: var(--accent);
+}
+.history-body { display: none; padding: 0 14px 14px; }
+.history-week.open .history-body { display: block; }
+.history-stat-row {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px;
+}
+.history-stat { text-align: center; }
+.history-stat .hval { font-size: 18px; font-weight: 900; color: var(--accent); }
+.history-stat .hlbl { font-size: 10px; color: var(--muted); }
+.note-row { margin-bottom: 6px; }
+.note-day-label { font-size: 10px; font-weight: 700; color: var(--gold); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 1px; }
+.note-text { font-size: 12px; color: var(--text); background: var(--surface); padding: 8px 10px; border-radius: 8px; line-height: 1.5; }
+.empty-history { text-align: center; color: var(--muted); font-size: 13px; padding: 40px 0; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--accent3); color: #000;
+  padding: 11px 22px; border-radius: 30px;
+  font-weight: 700; font-size: 12px;
+  transition: transform .3s; z-index: 999;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* INSTALL BANNER */
+.install-banner {
+  display: none;
+  margin: 12px 16px 0;
+  background: linear-gradient(135deg, rgba(0,229,255,.1), rgba(124,58,237,.1));
+  border: 1px solid var(--accent);
+  border-radius: 12px; padding: 12px 14px;
+  align-items: center; gap: 10px;
+}
+.install-banner.show { display: flex; }
+.install-banner p { flex: 1; font-size: 12px; line-height: 1.4; }
+.install-banner button {
+  background: var(--accent); border: none; color: #000;
+  padding: 8px 14px; border-radius: 8px;
+  font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;
+}
+
+/* RTL overrides */
+html[dir="rtl"] .lang-btn { right: auto; left: 16px; }
+html[dir="rtl"] body { font-family: 'Vazirmatn', sans-serif; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="lang-btn" id="langBtn" onclick="toggleLang()">فارسی</button>
+  <div class="eyebrow" data-en="Functional Fitness" data-fa="تمرین کارکردی">Functional Fitness</div>
+  <h1 data-en="Workout Tracker" data-fa="ترکر تمرینی">Workout Tracker</h1>
+  <p data-en="Track every session. Watch yourself transform." data-fa="هر جلسه رو ثبت کن. تحولت رو ببین.">Track every session. Watch yourself transform.</p>
+</div>
+
+<div class="install-banner" id="installBanner">
+  <p data-en="Install as app on your phone — works offline!" data-fa="به عنوان اپ نصب کن — آفلاین هم کار می‌کنه!">Install as app on your phone — works offline!</p>
+  <button onclick="installApp()" data-en="Install" data-fa="نصب">Install</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="workout" data-en="Workout" data-fa="تمرین" onclick="switchTab('workout')">Workout</div>
+  <div class="tab" data-tab="stats" data-en="Stats" data-fa="آمار" onclick="switchTab('stats')">Stats</div>
+  <div class="tab" data-tab="history" data-en="History" data-fa="تاریخچه" onclick="switchTab('history')">History</div>
+</div>
+
+<!-- WORKOUT TAB -->
+<div class="page active" id="page-workout">
+  <div style="padding:16px 16px 0">
+    <div class="week-nav">
+      <button onclick="changeWeek(-1)">‹</button>
+      <div class="week-label" id="weekLabel">Week 1</div>
+      <button onclick="changeWeek(1)">›</button>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-card cyan"><div class="val" id="doneCount">0</div><div class="lbl" data-en="Days Done" data-fa="روز تمرین">Days Done</div></div>
+      <div class="stat-card red"><div class="val" id="streakCount">0</div><div class="lbl" data-en="Week Streak" data-fa="هفته متوالی">Week Streak</div></div>
+      <div class="stat-card green"><div class="val" id="totalWeeks">1</div><div class="lbl" data-en="Total Weeks" data-fa="کل هفته‌ها">Total Weeks</div></div>
+    </div>
+  </div>
+  <div style="padding: 0 16px">
+    <div class="sec" data-en="This Week's Sessions" data-fa="جلسات این هفته">This Week's Sessions</div>
+    <div id="daysList"></div>
+  </div>
+</div>
+
+<!-- STATS TAB -->
+<div class="page" id="page-stats">
+  <div class="sec" data-en="Weekly Measurements" data-fa="اندازه‌گیری هفتگی">Weekly Measurements</div>
+  <div class="card-box">
+    <h3 class="c-accent">📏 <span data-en="Body Stats (cm / kg)" data-fa="اندازه‌های بدن (سانتی‌متر / کیلوگرم)">Body Stats (cm / kg)</span></h3>
+    <div class="measure-grid">
+      <div class="measure-item"><label data-en="Weight (kg)" data-fa="وزن (kg)">Weight (kg)</label><input type="number" id="weight" placeholder="83" step="0.1"></div>
+      <div class="measure-item"><label data-en="Waist (cm)" data-fa="دور کمر (cm)">Waist (cm)</label><input type="number" id="waist" placeholder="85"></div>
+      <div class="measure-item"><label data-en="Chest (cm)" data-fa="دور سینه (cm)">Chest (cm)</label><input type="number" id="chest" placeholder="100"></div>
+      <div class="measure-item"><label data-en="Arm (cm)" data-fa="دور بازو (cm)">Arm (cm)</label><input type="number" id="arm" placeholder="34"></div>
+      <div class="measure-item"><label data-en="Thigh (cm)" data-fa="دور ران (cm)">Thigh (cm)</label><input type="number" id="thigh" placeholder="55"></div>
+      <div class="measure-item"><label data-en="Shoulder (cm)" data-fa="دور شانه (cm)">Shoulder (cm)</label><input type="number" id="shoulder" placeholder="115"></div>
+    </div>
+  </div>
+
+  <div class="sec" data-en="Data Management" data-fa="مدیریت داده">Data Management</div>
+  <div class="btn-row">
+    <button class="btn btn-save" onclick="saveWeek()" data-en="💾 Save Week" data-fa="💾 ذخیره هفته">💾 Save Week</button>
+    <button class="btn btn-export" onclick="exportJSON()" data-en="⬇️ Export JSON" data-fa="⬇️ خروجی JSON">⬇️ Export JSON</button>
+    <button class="btn btn-import" onclick="document.getElementById('importFile').click()" data-en="⬆️ Import JSON" data-fa="⬆️ ورودی JSON">⬆️ Import JSON</button>
+  </div>
+  <input type="file" id="importFile" accept=".json" onchange="importJSON(event)">
+
+  <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px" data-en="Import your existing file to continue where you left off." data-fa="فایل قبلیت رو import کن تا از همونجا ادامه بدی.">Import your existing file to continue where you left off.</p>
+</div>
+
+<!-- HISTORY TAB -->
+<div class="page" id="page-history">
+  <div class="sec" data-en="Past Weeks" data-fa="هفته‌های گذشته">Past Weeks</div>
+  <div id="historyList"></div>
+</div>
+
+<div class="toast" id="toast">✅ Saved!</div>
+
+<script>
+// ── LANGUAGE ──────────────────────────────────────────
+let lang = localStorage.getItem('lang') || 'en';
+
+function toggleLang() {
+  lang = lang === 'en' ? 'fa' : 'en';
+  localStorage.setItem('lang', lang);
+  applyLang();
+}
+
+function applyLang() {
+  const root = document.getElementById('htmlRoot');
+  const btn = document.getElementById('langBtn');
+  if (lang === 'fa') {
+    root.setAttribute('lang', 'fa');
+    root.setAttribute('dir', 'rtl');
+    btn.textContent = 'English';
+    document.body.style.fontFamily = "'Vazirmatn', sans-serif";
+  } else {
+    root.setAttribute('lang', 'en');
+    root.setAttribute('dir', 'ltr');
+    btn.textContent = 'فارسی';
+    document.body.style.fontFamily = "'Inter', sans-serif";
+  }
+  document.querySelectorAll('[data-en]').forEach(el => {
+    if (!el.closest('.day-expand') || el.classList.contains('sec') || el.tagName === 'LABEL' || el.tagName === 'BUTTON' || el.classList.contains('lbl') || el.dataset.alwaysTranslate) {
+      el.textContent = el.dataset[lang] || el.dataset.en;
+    }
+  });
+  // Re-render week label
+  document.getElementById('weekLabel').textContent = (lang === 'fa' ? 'هفته ' : 'Week ') + currentWeek;
+  renderDays(loadWeekData(currentWeek));
+  if (document.getElementById('page-history').classList.contains('active')) renderHistory();
+}
+
+// ── DATA ──────────────────────────────────────────────
+// Single JSON file structure:
+// { weeks: { "1": { days:[...], notes:{0:"...",2:"..."}, weight, waist, chest, arm, thigh, shoulder, exChecks:{} } } }
+
+let appData = { weeks: {} };
+
+function getWeek(w) {
+  if (!appData.weeks[w]) appData.weeks[w] = { days: Array(7).fill(false), notes: {}, weight:'', waist:'', chest:'', arm:'', thigh:'', shoulder:'', exChecks:{} };
+  return appData.weeks[w];
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem('workoutAppData');
+    if (raw) appData = JSON.parse(raw);
+  } catch(e) {}
+}
+
+function saveToStorage() {
+  try { localStorage.setItem('workoutAppData', JSON.stringify(appData)); } catch(e) {}
+}
+
+function loadWeekData(w) { return getWeek(w); }
+
+// ── PROGRAM ───────────────────────────────────────────
+const DAYS_EN = [
+  { name:'Saturday', type:'Push — Chest, Shoulders, Triceps', badge:'badge-push', label:'PUSH',
+    exercises:[{n:'Barbell Bench Press',s:'4×12'},{n:'Dumbbell Fly',s:'3×15'},{n:'Advanced Push-Up',s:'3×20'},{n:'Dumbbell Shoulder Press',s:'4×12'},{n:'Lateral Raise',s:'3×15'},{n:'Front Raise',s:'3×15'},{n:'Face Pull (Cable)',s:'3×15'},{n:'Tricep Pushdown',s:'3×15'},{n:'Bench Dips',s:'3×15'},{n:'Skull Crusher',s:'3×12'},{n:'Wrist Curl',s:'3×20'},{n:'Reverse Curl',s:'3×15'}]},
+  { name:'Sunday', type:'Pull — Back, Biceps, Forearms', badge:'badge-pull', label:'PULL',
+    exercises:[{n:'Bent-Over Barbell Row',s:'4×12'},{n:'Cable Row',s:'3×15'},{n:'Pull-Up',s:'4×max'},{n:'T-Bar Row',s:'3×12'},{n:'Hyperextension',s:'4×15'},{n:'Romanian Deadlift',s:'3×12'},{n:'Barbell Curl',s:'4×12'},{n:'Hammer Curl',s:'3×15'},{n:'Cable Curl',s:'3×15'},{n:"Farmer's Walk",s:'3×30m'},{n:'Plate Pinch',s:'3×30s'}]},
+  { name:'Monday', type:'Leg + Core — Quads, Hamstrings, Glutes, Abs', badge:'badge-leg', label:'LEG',
+    exercises:[{n:'Barbell Squat',s:'4×12'},{n:'Leg Press',s:'3×15'},{n:'Dumbbell Lunge',s:'3×12 each'},{n:'Leg Curl',s:'3×15'},{n:'Standing Calf Raise',s:'4×20'},{n:'Seated Calf Raise',s:'3×20'},{n:'Hip Thrust',s:'4×15'},{n:'Cable Kickback',s:'3×15 each'},{n:'Side-Lying Clam',s:'3×20'},{n:'Plank',s:'3×45s'},{n:'Crunches',s:'3×20'},{n:'Leg Raise',s:'3×15'},{n:'Russian Twist',s:'3×20'}]},
+  { name:'Tuesday', type:'Full Rest', badge:'badge-rest', label:'REST', rest:true, exercises:[] },
+  { name:'Wednesday', type:'Full Body — Compound Movements', badge:'badge-full', label:'FULL',
+    exercises:[{n:'Deadlift',s:'4×8'},{n:'Pull-Up',s:'4×max'},{n:'Dumbbell Bench Press',s:'3×12'},{n:'Goblet Squat',s:'3×15'},{n:'Dips',s:'3×max'},{n:'Explosive Push-Up',s:'3×15'},{n:"Farmer's Walk",s:'3×40m'},{n:'Moving Plank',s:'3×30s'}]},
+  { name:'Thursday', type:'Cardio + HIIT + Abs', badge:'badge-cardio', label:'HIIT',
+    exercises:[{n:'Treadmill / Bike (steady)',s:'20 min'},{n:'Burpees',s:'8× 30s on/off'},{n:'Jump Squat',s:'8× 30s on/off'},{n:'Mountain Climber',s:'8× 30s on/off'},{n:'Hanging Leg Raise',s:'4×15'},{n:'Cable Crunch',s:'3×20'},{n:'Side Plank',s:'3×30s each'},{n:'Ab Wheel',s:'3×10'}]},
+  { name:'Friday', type:'Active Recovery — Walk, Stretch', badge:'badge-rest', label:'REST', rest:true,
+    exercises:[{n:'30 min Walk',s:'—'},{n:'Full Body Stretch',s:'15 min'},{n:'Foam Rolling',s:'10 min'}]},
+];
+
+const DAYS_FA = [
+  { name:'شنبه', type:'پوش — سینه، سرشانه، سه‌سر', badge:'badge-push', label:'PUSH',
+    exercises:[{n:'پرس سینه هالتر',s:'4×12'},{n:'دمبل فلای',s:'3×15'},{n:'پوش‌آپ پیشرفته',s:'3×20'},{n:'پرس سرشانه دمبل',s:'4×12'},{n:'نشر جانب',s:'3×15'},{n:'نشر جلو',s:'3×15'},{n:'فیس پول (کابل)',s:'3×15'},{n:'پشت بازو پولی',s:'3×15'},{n:'دیپس بین نیمکت',s:'3×15'},{n:'اسکال کراشر',s:'3×12'},{n:'Wrist Curl',s:'3×20'},{n:'Reverse Curl',s:'3×15'}]},
+  { name:'یکشنبه', type:'پول — پشت، دوسر، ساعد', badge:'badge-pull', label:'PULL',
+    exercises:[{n:'زیربغل هالتر خم',s:'4×12'},{n:'کابل زیربغل',s:'3×15'},{n:'پول‌آپ',s:'4×max'},{n:'تی‌بار رو',s:'3×12'},{n:'هایپراکستنشن',s:'4×15'},{n:'ددلیفت رومانیایی',s:'3×12'},{n:'جلوبازو هالتر',s:'4×12'},{n:'جلوبازو چکشی',s:'3×15'},{n:'کابل جلوبازو',s:'3×15'},{n:'Farmer\'s Walk',s:'3×30m'},{n:'Plate Pinch',s:'3×30s'}]},
+  { name:'دوشنبه', type:'پا + کور — چهارسر، همسترینگ، گلوت، شکم', badge:'badge-leg', label:'LEG',
+    exercises:[{n:'اسکوات هالتر',s:'4×12'},{n:'پرس پا',s:'3×15'},{n:'لانج دمبل',s:'3×12 هر پا'},{n:'لگ کرل',s:'3×15'},{n:'Calf Raise ایستاده',s:'4×20'},{n:'Seated Calf Raise',s:'3×20'},{n:'هیپ تراست',s:'4×15'},{n:'کابل کیک‌بک',s:'3×15 هر پا'},{n:'Side-Lying Clam',s:'3×20'},{n:'پلانک',s:'3×45s'},{n:'کرانچ',s:'3×20'},{n:'لگ ریز',s:'3×15'},{n:'روسی توئیست',s:'3×20'}]},
+  { name:'سه‌شنبه', type:'استراحت کامل', badge:'badge-rest', label:'REST', rest:true, exercises:[] },
+  { name:'چهارشنبه', type:'تمام بدن — حرکات کمپاند', badge:'badge-full', label:'FULL',
+    exercises:[{n:'ددلیفت',s:'4×8'},{n:'پول‌آپ',s:'4×max'},{n:'پرس سینه دمبل',s:'3×12'},{n:'اسکوات گابلت',s:'3×15'},{n:'دیپس',s:'3×max'},{n:'پوش‌آپ انفجاری',s:'3×15'},{n:'Farmer\'s Walk',s:'3×40m'},{n:'پلانک متحرک',s:'3×30s'}]},
+  { name:'پنجشنبه', type:'کاردیو + HIIT + شکم', badge:'badge-cardio', label:'HIIT',
+    exercises:[{n:'تردمیل / دوچرخه',s:'20 دقیقه'},{n:'بارپی',s:'8× 30s'},{n:'جامپ اسکوات',s:'8× 30s'},{n:'Mountain Climber',s:'8× 30s'},{n:'هنگینگ لگ ریز',s:'4×15'},{n:'Cable Crunch',s:'3×20'},{n:'پلانک جانبی',s:'3×30s'},{n:'Ab Wheel',s:'3×10'}]},
+  { name:'جمعه', type:'استراحت فعال — پیاده‌روی، کشش', badge:'badge-rest', label:'REST', rest:true,
+    exercises:[{n:'پیاده‌روی',s:'30 دقیقه'},{n:'کشش کامل بدن',s:'15 دقیقه'},{n:'فوم رولینگ',s:'10 دقیقه'}]},
+];
+
+function getDays() { return lang === 'fa' ? DAYS_FA : DAYS_EN; }
+
+// ── RENDER DAYS ───────────────────────────────────────
+let currentWeek = 1;
+
+function renderDays(weekData) {
+  const list = document.getElementById('daysList');
+  list.innerHTML = '';
+  const days = getDays();
+  days.forEach((day, i) => {
+    const done = weekData.days[i] || false;
+    const ec = weekData.exChecks || {};
+    const noteText = (weekData.notes || {})[i] || '';
+
+    const exHTML = day.exercises.map((ex, j) => {
+      const checked = ec[i+'_'+j] || false;
+      return `<div class="exercise-item">
+        <div class="ex-check ${checked?'checked':''}" id="ex_${i}_${j}" onclick="toggleEx(${i},${j})">${checked?'✓':''}</div>
+        <span class="ex-name">${ex.n}</span>
+        <span class="ex-sets">${ex.s}</span>
+      </div>`;
+    }).join('');
+
+    const notePlaceholder = lang === 'fa'
+      ? 'چطور بود؟ چی حس کردی؟ (اختیاری)'
+      : 'How did it feel? Any notes? (optional)';
+    const noteLbl = lang === 'fa' ? '✍️ یادداشت روز' : '✍️ Daily Note';
+    const saveLbl = lang === 'fa' ? 'ذخیره یادداشت' : 'Save Note';
+
+    const noteSection = `<div class="daily-note-section">
+      <label>${noteLbl}</label>
+      <textarea id="note_${i}" placeholder="${notePlaceholder}">${noteText}</textarea>
+      <button class="note-save-btn" onclick="saveNote(${i})">${saveLbl}</button>
+    </div>`;
+
+    const div = document.createElement('div');
+    div.className = 'day-card' + (done?' done':'') + (day.rest&&day.exercises.length===0?' rest-visual':'');
+    div.id = 'day_'+i;
+    div.innerHTML = `
+      <div class="day-header">
+        <div class="day-check" onclick="toggleDay(${i})">${done?'✓':''}</div>
+        <div class="day-info" onclick="toggleExpand(${i})">
+          <div class="day-name">${day.name}</div>
+          <div class="day-type">${day.type}</div>
+        </div>
+        <span class="day-badge ${day.badge}" onclick="toggleExpand(${i})">${day.label}</span>
+        <span class="chevron" onclick="toggleExpand(${i})">▼</span>
+      </div>
+      ${day.exercises.length > 0 || true ? `<div class="day-expand">
+        ${day.exercises.length > 0 ? `<div class="exercise-list">${exHTML}</div>` : ''}
+        ${noteSection}
+      </div>` : ''}
+    `;
+    list.appendChild(div);
+  });
+  updateStats();
+}
+
+function toggleDay(i) {
+  const days = getDays();
+  if (days[i].rest && days[i].exercises.length === 0) return;
+  const card = document.getElementById('day_'+i);
+  card.classList.toggle('done');
+  const check = card.querySelector('.day-check');
+  check.textContent = card.classList.contains('done') ? '✓' : '';
+  getWeek(currentWeek).days[i] = card.classList.contains('done');
+  saveToStorage();
+  updateStats();
+}
+
+function toggleExpand(i) {
+  document.getElementById('day_'+i).classList.toggle('open');
+}
+
+function toggleEx(dayIdx, exIdx) {
+  const wd = getWeek(currentWeek);
+  if (!wd.exChecks) wd.exChecks = {};
+  const key = dayIdx+'_'+exIdx;
+  wd.exChecks[key] = !wd.exChecks[key];
+  const el = document.getElementById('ex_'+dayIdx+'_'+exIdx);
+  if (el) { el.classList.toggle('checked', wd.exChecks[key]); el.textContent = wd.exChecks[key]?'✓':''; }
+  saveToStorage();
+}
+
+function saveNote(dayIdx) {
+  const val = document.getElementById('note_'+dayIdx)?.value || '';
+  const wd = getWeek(currentWeek);
+  if (!wd.notes) wd.notes = {};
+  wd.notes[dayIdx] = val;
+  saveToStorage();
+  showToast(lang==='fa' ? '✅ یادداشت ذخیره شد' : '✅ Note saved!');
+}
+
+// ── STATS ─────────────────────────────────────────────
+function updateStats() {
+  const days = getDays();
+  const wd = getWeek(currentWeek);
+  let done = 0;
+  days.forEach((d,i) => { if (!d.rest && wd.days[i]) done++; });
+  document.getElementById('doneCount').textContent = done;
+
+  let streak = 0;
+  for (let w = currentWeek; w >= 1; w--) {
+    const d = appData.weeks[w];
+    if (d && d.days && d.days.some(Boolean)) streak++; else break;
+  }
+  document.getElementById('streakCount').textContent = streak;
+
+  const total = Math.max(...Object.keys(appData.weeks).map(Number), currentWeek);
+  document.getElementById('totalWeeks').textContent = total;
+}
+
+// ── SAVE WEEK ─────────────────────────────────────────
+function saveWeek() {
+  const wd = getWeek(currentWeek);
+  wd.weight = document.getElementById('weight').value;
+  wd.waist  = document.getElementById('waist').value;
+  wd.chest  = document.getElementById('chest').value;
+  wd.arm    = document.getElementById('arm').value;
+  wd.thigh  = document.getElementById('thigh').value;
+  wd.shoulder = document.getElementById('shoulder').value;
+  saveToStorage();
+  showToast(lang==='fa' ? '✅ هفته ذخیره شد!' : '✅ Week saved!');
+  renderHistory();
+}
+
+// ── JSON EXPORT ───────────────────────────────────────
+function exportJSON() {
+  saveWeek();
+  const blob = new Blob([JSON.stringify(appData, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'workout_progress.json';
+  a.click();
+  showToast(lang==='fa' ? '⬇️ خروجی گرفته شد!' : '⬇️ Exported!');
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.weeks) {
+        // Merge: new weeks data takes priority
+        appData = { weeks: { ...appData.weeks, ...data.weeks } };
+      } else {
+        // Legacy format support
+        appData = { weeks: {} };
+        Object.keys(data).forEach(k => {
+          const m = k.match(/^week_(\d+)$/);
+          if (m) appData.weeks[parseInt(m[1])] = data[k];
+        });
+      }
+      saveToStorage();
+      renderWeek();
+      renderHistory();
+      showToast(lang==='fa' ? '⬆️ وارد شد!' : '⬆️ Imported!');
+    } catch(err) { showToast('❌ Invalid JSON'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── HISTORY ───────────────────────────────────────────
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const weeks = Object.keys(appData.weeks).map(Number).sort((a,b)=>b-a);
+  if (weeks.length === 0) {
+    list.innerHTML = `<div class="empty-history">${lang==='fa'?'هنوز داده‌ای ثبت نشده':'No data yet. Start tracking!'}</div>`;
+    return;
+  }
+  const days = getDays();
+  list.innerHTML = weeks.map(w => {
+    const wd = appData.weeks[w];
+    const trainDays = (wd.days||[]).filter(Boolean).length;
+    const hasNotes = wd.notes && Object.values(wd.notes).some(v=>v);
+    const wLabel = lang==='fa' ? 'هفته '+w : 'Week '+w;
+
+    const notesHTML = hasNotes ? Object.entries(wd.notes||{}).filter(([,v])=>v).map(([idx,txt])=>{
+      const dayName = days[idx]?.name || (lang==='fa'?'روز':'Day')+' '+(+idx+1);
+      return `<div class="note-row"><div class="note-day-label">${dayName}</div><div class="note-text">${txt}</div></div>`;
+    }).join('') : '';
+
+    const statsRow = (wd.weight||wd.waist||wd.chest) ? `
+      <div class="history-stat-row">
+        ${wd.weight?`<div class="history-stat"><div class="hval">${wd.weight}</div><div class="hlbl">kg</div></div>`:''}
+        ${wd.waist?`<div class="history-stat"><div class="hval">${wd.waist}</div><div class="hlbl">${lang==='fa'?'کمر':'Waist'} cm</div></div>`:''}
+        ${wd.arm?`<div class="history-stat"><div class="hval">${wd.arm}</div><div class="hlbl">${lang==='fa'?'بازو':'Arm'} cm</div></div>`:''}
+      </div>` : '';
+
+    return `<div class="history-week" id="hw_${w}">
+      <div class="history-week-header" onclick="document.getElementById('hw_${w}').classList.toggle('open')">
+        <div><div class="hw-title">${wLabel}</div><div class="hw-meta">${trainDays} ${lang==='fa'?'روز تمرین':'training days'}</div></div>
+        <span class="hw-badge">${trainDays}/5</span>
+      </div>
+      <div class="history-body">
+        ${statsRow}
+        ${notesHTML}
+        ${!statsRow&&!notesHTML?`<p style="color:var(--muted);font-size:12px">${lang==='fa'?'داده‌ای ثبت نشده':'No data recorded'}</p>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── WEEK NAV ──────────────────────────────────────────
+function changeWeek(dir) {
+  const nw = currentWeek + dir;
+  if (nw < 1 || nw > 52) return;
+  currentWeek = nw;
+  renderWeek();
+}
+
+function renderWeek() {
+  document.getElementById('weekLabel').textContent = (lang==='fa'?'هفته ':'Week ')+currentWeek;
+  const wd = loadWeekData(currentWeek);
+  renderDays(wd);
+  document.getElementById('weight').value = wd.weight||'';
+  document.getElementById('waist').value  = wd.waist||'';
+  document.getElementById('chest').value  = wd.chest||'';
+  document.getElementById('arm').value    = wd.arm||'';
+  document.getElementById('thigh').value  = wd.thigh||'';
+  document.getElementById('shoulder').value = wd.shoulder||'';
+}
+
+// ── TABS ──────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id==='page-'+tab));
+  if (tab==='history') renderHistory();
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ── PWA INSTALL ───────────────────────────────────────
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('installBanner').classList.remove('show'); });
+}
+
+// ── SERVICE WORKER ────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+// ── INIT ──────────────────────────────────────────────
+loadFromStorage();
+applyLang();
+renderWeek();
+</script>
+</body>
+</html>
